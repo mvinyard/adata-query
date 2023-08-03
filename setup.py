@@ -23,6 +23,7 @@ setuptools.setup(
         "torch>=2.0.1",
         "autodevice>=0.0.2",
         "ABCParse>=0.0.6",
+        "licorice_font>=0.0.3",
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
