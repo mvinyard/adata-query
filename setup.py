@@ -9,7 +9,7 @@ import sys
 # -- run setup: ----------------------------------------------------------------
 setuptools.setup(
     name="adata_query",
-    version="0.0.1rc0",
+    version="0.0.1rc1",
     python_requires=">3.9.0",
     author="Michael E. Vinyard",
     author_email="mvinyard.ai@gmail.com",
@@ -19,8 +19,10 @@ setuptools.setup(
     description="Fetch and format data matrices from AnnData.",
     packages=setuptools.find_packages(),
     install_requires=[
-        "anndata",
-        "torch",
+        "anndata>=0.9.1",
+        "torch>=2.0.1",
+        "autodevice>=0.0.2",
+        "ABCParse>=0.0.6",
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
