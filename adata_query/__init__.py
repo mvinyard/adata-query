@@ -1,6 +1,6 @@
 # __init__.py
 
-__version__ = "v0.0.1rc3"
+__version__ = "v0.0.1rc4"
 
 from . import _utils
 from . import _core
