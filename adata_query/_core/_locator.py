@@ -11,7 +11,7 @@ from typing import List
 
 # -- operational class: --------------------------------------------------------
 class AnnDataLocator(ABCParse.ABCParse):
-    """Query available key values of AnnData"""
+    """Query available key values of AnnData. Operational class powering the `locate` function."""
     def __init__(self, *args, **kwargs) -> None:
         """
         Parameters
@@ -140,15 +140,22 @@ class AnnDataLocator(ABCParse.ABCParse):
     
 def locate(adata: anndata.AnnData, key: str) -> str:
     """
+    Given, adata and a key that points to a specific matrix stored in adata,
+    return the data, formatted either as np.ndarray or torch.Tensor. If formatted
+    as torch.Tensor, device may be specified based on available devices.
+    
     Parameters
     ----------
-    adata: anndata.AnnData
+    adata: anndata.AnnData, [ required ]
     
-    key: str
+    key: str [ required ]
+        Key to access a matrix in adata. For example, if you wanted to access
+        adata.obsm['X_pca'], you would pass: "X_pca".
     
     Returns
     -------
-    
+    attr_key: str
+        Attribute of adata containing the passed key
     """
     locator = AnnDataLocator()
     return locator(adata = adata, key = key)

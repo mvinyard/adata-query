@@ -13,6 +13,7 @@ from typing import Union
 
 # -- operational class: --------------------------------------------------------
 class DataFormatter(ABCParse.ABCParse):
+    """Format data to interface with numpy or torch, on a specified device."""
     def __init__(self, data: Union[_torch.Tensor, np.ndarray], *args, **kwargs):
         self.__parse__(locals())
 
@@ -79,7 +80,24 @@ class DataFormatter(ABCParse.ABCParse):
 
 # -- functional wrap: ----------------------------------------------------------
 def format_data(data: Union[np.ndarray, _torch.Tensor], torch: bool = False, device: _torch.device = autodevice.AutoDevice()):
+    """
+    Given, adata and a key that points to a specific matrix stored in adata,  return the data,
+    formatted either as np.ndarray or torch.Tensor. If formatted as torch.Tensor, device may be
+    specified based on available devices.
     
+    Parameters
+    ----------
+    data: Union[np.ndarray, torch.Tensor] [ required ]
+        Input data to be formatted. Typically an np.ndarray, torch.Tensor, or ArrayView.
+    
+    torch: bool, default = False
+        Boolean indicator of whether data should be formatted as torch.Tensor. If False
+        (default), data is formatted as np.ndarray.
+    
+    device: torch.device, default = autodevice.AutoDevice()
+        Should torch=True, the device ("cpu", "cuda:N", "mps:N") may be set. The default value,
+        autodevice.AutoDevice() will indicate the use of GPU, if available.
+    """
     formatter = DataFormatter(data=data)
     if torch:
         return formatter.to_torch(device=device)
