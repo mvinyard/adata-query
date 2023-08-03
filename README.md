@@ -6,6 +6,12 @@
 
 Fetch data matrices from AnnData and format as `np.ndarray` or `torch.Tensor`, on any device.
 
+## Installation
+
+```python
+pip install adata-query
+```
+
 Example: [notebook](https://colab.research.google.com/github/mvinyard/AnnDataQuery/blob/main/notebooks/anndata_query_tutorial.ipynb)
 
 For more information, see: [documentation](https://michael-vinyard.gitbook.io/anndataquery/)
