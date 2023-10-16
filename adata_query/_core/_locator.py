@@ -6,13 +6,13 @@ import numpy as np
 
 
 # -- set typing: ---------------------------------------------------------------
-from typing import List
+from typing import List, Optional
 
 
 # -- operational class: --------------------------------------------------------
 class AnnDataLocator(ABCParse.ABCParse):
     """Query available key values of AnnData. Operational class powering the `locate` function."""
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, searchable: Optional[List[str]] = None, *args, **kwargs) -> None:
         """
         Parameters
         ----------
@@ -23,6 +23,9 @@ class AnnDataLocator(ABCParse.ABCParse):
         """
         
         self._ATTRS = {}
+        self._searchable = ['X']
+        if not searchable is None:
+             self._searchable += searchable
 
     def _stash(self, attr: str, attr_val: np.ndarray) -> None:
         """
@@ -56,6 +59,8 @@ class AnnDataLocator(ABCParse.ABCParse):
             if attr == "layers":
                 attr_val = list(getattr(adata, attr))
                 self._stash(attr, attr_val)
+            if attr in self._searchable:
+                self._stash(attr, attr)
 
     def _cross_reference(self, passed_key: str) -> List[str]:
         """
