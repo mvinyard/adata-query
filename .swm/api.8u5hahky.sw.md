@@ -6,15 +6,14 @@ app_version: 1.18.13
 ---
 
 ## Introduction
+
 In this doc we will describe the API for {{API Name (e.g., sending Analytic Events)}} and how to use it correctly.
 
 We use this API when {{use cases}}.
 
+Thank you for visiting the `adata-query` documentation website. There are three primary pages beyond this home page: the [Quick Start Guide](/anndataquery/quick-start), an [Installation Guide](/anndataquery/installation), and the complete [API Reference](/anndataquery/reference/api-reference), all linked below and to the left. If you find this library useful for your own research, please consider [starring the repo on GitHub](https://github.com/mvinyard/AnnDataQuery/tree/main) to stay up to date with future developments or reach out to connect.
+
 ## API definition
-
-<br/>
-
-
 
 <br/>
 
@@ -22,24 +21,15 @@ We use this API when {{use cases}}.
 
 <br/>
 
-
-
-<br/>
-
 ## Advanced usage: {{explain a scenario where this is needed}}
 
 <br/>
 
-
-
-<br/>
-
 ## Best practices and additional notes
+
 When using this API, it is important to follow a few best practices and avoid some common mistakes.
 
 <br/>
-
-
 
 <br/>
 
