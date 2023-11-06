@@ -7,9 +7,13 @@ import sys
 
 
 # -- run setup: ----------------------------------------------------------------
+
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setuptools.setup(
     name="adata_query",
-    version="0.0.2rc0",
+    version="0.0.2",
     python_requires=">3.9.0",
     author="Michael E. Vinyard",
     author_email="mvinyard.ai@gmail.com",
@@ -18,13 +22,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     description="Fetch and format data matrices from AnnData.",
     packages=setuptools.find_packages(),
-    install_requires=[
-        "anndata>=0.9.1",
-        "torch>=2.0.1",
-        "autodevice>=0.0.2",
-        "ABCParse>=0.0.7",
-        "licorice_font>=0.0.3",
-    ],
+    install_requires=requirements,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Programming Language :: Python :: 3.9",
