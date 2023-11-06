@@ -79,7 +79,11 @@ class DataFormatter(ABCParse.ABCParse):
 
 
 # -- functional wrap: ----------------------------------------------------------
-def format_data(data: Union[np.ndarray, _torch.Tensor], torch: bool = False, device: _torch.device = autodevice.AutoDevice()):
+def format_data(
+    data: Union[np.ndarray, _torch.Tensor], 
+    torch: bool = False, 
+    device: _torch.device = autodevice.AutoDevice(),
+):
     """
     Given, adata and a key that points to a specific matrix stored in adata,  return the data,
     formatted either as np.ndarray or torch.Tensor. If formatted as torch.Tensor, device may be
