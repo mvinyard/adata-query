@@ -28,7 +28,10 @@ class AnnDataFetcher(ABCParse.ABCParse):
         return self._adata.obs.groupby(self._groupby)
 
     def _forward(self, adata, key):
-        data = getattr(adata, locate(adata, key))[key]
+        if key == "X":
+            data = getattr(adata, "X")
+        else:
+            data = getattr(adata, locate(adata, key))[key]
         return format_data(data=data, torch = self._torch, device = self._device)
 
     def _grouped_subroutine(self, adata, key):

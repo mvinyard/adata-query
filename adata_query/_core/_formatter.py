@@ -20,24 +20,24 @@ class DataFormatter(ABCParse.ABCParse):
     @property
     def device_type(self) -> str:
         """Returns device type"""
-        if hasattr(self.data, "device"):
-            return self.data.device.type
+        if hasattr(self._data, "device"):
+            return self._data.device.type
         return "cpu"
 
     @property
     def is_ArrayView(self) -> bool:
         """Checks if device is of type ArrayView"""
-        return isinstance(self.data, anndata._core.views.ArrayView)
+        return isinstance(self._data, anndata._core.views.ArrayView)
 
     @property
     def is_numpy_array(self) -> bool:
         """Checks if device is of type np.ndarray"""
-        return isinstance(self.data, np.ndarray)
+        return isinstance(self._data, np.ndarray)
 
     @property
     def is_torch_Tensor(self) -> bool:
         """Checks if device is of type torch.Tensor"""
-        return isinstance(self.data, _torch.Tensor)
+        return isinstance(self._data, _torch.Tensor)
 
     @property
     def on_cpu(self) -> bool:
@@ -53,11 +53,11 @@ class DataFormatter(ABCParse.ABCParse):
         """Sends data to np.ndarray"""
         if self.is_torch_Tensor:
             if self.on_gpu:
-                return self.data.detach().cpu().numpy()
-            return self.data.numpy()
+                return self._data.detach().cpu().numpy()
+            return self._data.numpy()
         elif self.is_ArrayView:
-            return self.data.toarray()
-        return self.data
+            return self._data.toarray()
+        return self._data
 
     def to_torch(self, device=autodevice.AutoDevice()) -> _torch.Tensor:
         """
@@ -72,14 +72,18 @@ class DataFormatter(ABCParse.ABCParse):
         self.__update__(locals())
 
         if self.is_torch_Tensor:
-            return self.data.to(device)
+            return self._data.to(self._device)
         elif self.is_ArrayView:
-            self.data = self.data.toarray()
-        return _torch.Tensor(self.data).to(device)
+            self._data = self._data.toarray()
+        return _torch.Tensor(self._data).to(self._device)
 
 
 # -- functional wrap: ----------------------------------------------------------
-def format_data(data: Union[np.ndarray, _torch.Tensor], torch: bool = False, device: _torch.device = autodevice.AutoDevice()):
+def format_data(
+    data: Union[np.ndarray, _torch.Tensor], 
+    torch: bool = False, 
+    device: _torch.device = autodevice.AutoDevice(),
+):
     """
     Given, adata and a key that points to a specific matrix stored in adata,  return the data,
     formatted either as np.ndarray or torch.Tensor. If formatted as torch.Tensor, device may be
