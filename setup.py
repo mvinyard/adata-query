@@ -22,7 +22,7 @@ setuptools.setup(
         "anndata>=0.9.1",
         "torch>=2.0.1",
         "autodevice>=0.0.2",
-        "ABCParse>=0.0.6",
+        "ABCParse>=0.0.7",
         "licorice_font>=0.0.3",
     ],
     classifiers=[
