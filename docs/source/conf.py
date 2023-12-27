@@ -1,28 +1,45 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+__doc__ = """Configuration file for the Sphinx documentation builder."""
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
+# -- project info: ------------------------------------------------------------
 project = 'adata-query'
 copyright = '2023, Michael E. Vinyard'
 author = 'Michael E. Vinyard'
 release = '0.1.0'
 
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
-extensions = []
+# -- config: ------------------------------------------------------------------
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'nbsphinx',
+    'sphinx_copybutton',
+    'sphinx_favicon',
+    'sphinx_design',
+]
 
 templates_path = ['_templates']
 exclude_patterns = []
 
 
+# -- html output options: -----------------------------------------------------
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-html_theme = 'alabaster'
+html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
+html_css_files = ['css/custom.css']
+
+
+html_theme_options = {
+    "github_url": "https://github.com/mvinyard/AnnDataQuery",
+    "twitter_url": "https://twitter.com/vinyard_m",
+    "logo": {
+      "image_light": "_static/imgs/adata_query.logo.png",
+      "image_dark": "_static/imgs/adata_query.logo.png",
+   },
+}
+autoclass_content = 'init'
+
+favicons = {"rel": "icon", "href": "imgs/magnifying_glass.png"}
+
+# -- notes: -------------------------------------------------------------------
+# For the full list of built-in configuration values, see the documentation:
+# https://www.sphinx-doc.org/en/master/usage/configuration.html

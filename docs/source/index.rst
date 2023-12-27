@@ -1,20 +1,98 @@
-.. adata-query documentation master file, created by
-   sphinx-quickstart on Wed Dec 27 13:51:56 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to adata-query's documentation!
-=======================================
+.. title:: adata-query
+
+
+.. image:: _static/imgs/adata_query.logo.png
+  :width: 200
+  :alt: adata-query-header-logo
+  :align: left
+
+
+.. raw:: html
+
+    <embed>
+        <div>
+        <br clear="all"/>
+        <br clear="all"/>
+        </div>
+    </embed>
+    
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :hidden:
+
+   quickstart
+   install
+   api
+   examples
 
 
 
-Indices and tables
-==================
+.. grid:: 4
+    :gutter: 1
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    .. grid-item-card::    
+       :link: quickstart.rst
+       :text-align: right
+       :img-background: _static/imgs/magnifying_glass.faded.png
+       
+       Quickstart
+       ^^^
+       
+       .. raw:: html
+
+          <embed><div><br></br></div></embed>
+
+       :octicon:`flame;4em;sd-text-dark`
+
+       
+    .. grid-item-card::
+       :link: install.rst
+       :text-align: right
+       :img-background: _static/imgs/magnifying_glass.faded.png
+       
+       Installation
+       ^^^
+       
+       .. raw:: html
+
+          <embed><div><br></br></div></embed>
+
+       :octicon:`desktop-download;4em;sd-text-dark`
+    
+    .. grid-item-card::
+       :link: api.rst
+       :text-align: right
+       :img-background: _static/imgs/magnifying_glass.faded.png
+       
+       API Reference
+       ^^^
+       
+       .. raw:: html
+
+          <embed><div><br></br></div></embed>
+
+       :octicon:`code;4em;sd-text-dark`
+       
+    .. grid-item-card::
+       :link: examples.rst
+       :text-align: right
+       :img-background: _static/imgs/magnifying_glass.faded.png
+       
+       Examples
+       ^^^
+       
+       .. raw:: html
+
+          <embed><div><br></br></div></embed>
+
+       :octicon:`sidebar-expand;4em;sd-text-dark`
+
+.. raw:: html
+
+    <embed>
+        <div>
+        <br></br>
+        <br></br>
+        </div>
+    </embed>
