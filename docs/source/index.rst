@@ -2,8 +2,8 @@
 .. title:: adata-query
 
 
-.. image:: _static/imgs/adata_query.logo.png
-  :width: 200
+.. image:: _static/imgs/adata_query.header.png
+  :width: 600
   :alt: adata-query-header-logo
   :align: left
 
