@@ -13,13 +13,12 @@ from typing import Union
 
 # -- operational class: --------------------------------------------------------
 class DataFormatter(ABCParse.ABCParse):
-    """Format data to interface with numpy or torch, on a specified device."""
+    """DataFormatter cls"""
     def __init__(self, data: Union[_torch.Tensor, np.ndarray], *args, **kwargs) -> None:
-        """Formatter Description.
+        """Format data to interface with numpy or torch, on a specified device.
 
         Args:
-            data (Union[_torch.Tensor, np.ndarray])
-            description.
+            data (``Union[np.ndarray, torch.Tensor]``): Input ``data`` to be formatted. Typically an ``np.ndarray``, ``torch.Tensor``, or ``ArrayView``.
 
         Returns:
             None
@@ -73,11 +72,12 @@ class DataFormatter(ABCParse.ABCParse):
         """Description of function.
 
         Args:
-            device (``torch.device``)
-            description of device.
+            device (``Optional[torch.device]``): If ``torch==True``, the device (e.g.: ``"cpu"``, ``"cuda:0"``, ``"mps:0"``) may be set. The default value, ``autodevice.AutoDevice()`` will indicate the use of GPU, if available.
+            
+            - **Default**: ``autodevice.AutoDevice()``
 
         Returns:
-            (``torch.Tensor``)
+            ``Union[np.ndarray, torch.Tensor]``: ``formatted_data``
         """
         self.__update__(locals())
 
@@ -93,22 +93,22 @@ def format_data(
     data: Union[np.ndarray, _torch.Tensor], 
     torch: bool = False, 
     device: _torch.device = autodevice.AutoDevice(),
-):
-    """Description of function.
+) -> Union[np.ndarray, _torch.Tensor]:
+    """Format data to interface with numpy or torch, on a specified device.
 
     Args:
-        data (Union[np.ndarray, torch.Tensor]). Input data to be formatted. Typically an np.ndarray, torch.Tensor, or ArrayView.
+        data (``Union[np.ndarray, torch.Tensor]``): Input ``data`` to be formatted. Typically an ``np.ndarray``, ``torch.Tensor``, or ``ArrayView``.
     
-        torch (Optional[bool]. Boolean indicator of whether data should be formatted as torch.Tensor. If False
-        (default), data is formatted as np.ndarray.
-        **Default**: False
+        torch (``Optional[bool]``): Toggle whether data should be formatted as ``torch.Tensor`` or ``np.ndarray``.
+        
+            - **Default**: ``False``
             
-        device (Optional[torch.device]). If ``torch==True``, the device ("cpu", "cuda:N", "mps:N") may be set.
-        The default value, autodevice.AutoDevice() will indicate the use of GPU, if available.
-        **Default**: ``autodevice.AutoDevice()``
+        device (``Optional[torch.device]``): If ``torch==True``, the device (e.g.: ``"cpu"``, ``"cuda:0"``, ``"mps:0"``) may be set. The default value, ``autodevice.AutoDevice()`` will indicate the use of GPU, if available.
+            
+            - **Default**: ``autodevice.AutoDevice()``
 
     Returns:
-        data (torch.Tensor)
+        ``Union[np.ndarray, torch.Tensor]``: ``formatted_data``
     """
     formatter = DataFormatter(data=data)
     

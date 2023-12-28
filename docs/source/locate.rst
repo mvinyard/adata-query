@@ -1,9 +1,9 @@
-adata_query.locate
-------------------
+``locate``
+----------
 
 .. autofunction:: adata_query._core._locator.locate
 
 
-Notes
-^^^^^
-This is a note.
+References
+""""""""""
+1. https://anndata.readthedocs.io/en/latest/.

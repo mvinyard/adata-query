@@ -1,6 +1,14 @@
 
 .. title:: adata-query
 
+.. raw:: html
+
+    <embed>
+        <div>
+        <br clear="all"/>
+        <br clear="all"/>
+        </div>
+    </embed>
 
 .. image:: _static/adata_query.header.png
   :width: 600
@@ -12,6 +20,8 @@
 
     <embed>
         <div>
+        <br clear="all"/>
+        <br clear="all"/>
         <br clear="all"/>
         <br clear="all"/>
         </div>

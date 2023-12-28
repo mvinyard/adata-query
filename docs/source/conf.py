@@ -7,6 +7,11 @@ author = 'Michael E. Vinyard'
 release = '0.1.0'
 
 # -- config: ------------------------------------------------------------------
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('../../adata_query'))
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',

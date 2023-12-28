@@ -11,18 +11,17 @@ import numpy as np
 
 # -- operational class: --------------------------------------------------------
 class AnnDataLocator(ABCParse.ABCParse):
-    """Query available key values of AnnData. Operational class powering the `locate` function."""
+    """AnnDataLocator cls"""
     def __init__(self, searchable: Optional[List[str]] = None, *args, **kwargs) -> None:
-        """Description.
+        """Query available key values of AnnData. Operational class powering the ``locate`` function.
 
         Args:
-            searchable (Optional[List[str]])
-            Description.
-            **Default**: None
+            searchable (``Optional[List[str]]``): baseline query terms.
+
+                - **Default**: ``None``
 
         Returns:
-            None
-                Initializes class object.
+            ``None``: Initializes class object.
         """
 
         self._ATTRS = {}
@@ -31,12 +30,12 @@ class AnnDataLocator(ABCParse.ABCParse):
             self._searchable += searchable
 
     def _stash(self, attr: str, attr_val: np.ndarray) -> None:
-        """Description.
+        """TBD: Description.
 
         Args:
-            attr (str)
+            attr (``str``): attribute name to stash.
 
-            attr_val (np.ndarray)
+            attr_val (``np.ndarray``): array value, linked to attribute to be stashed.
 
         Returns:
             None, updates `self._ATTRS` and sets the (attr, attr_val) key, value pair.
@@ -45,14 +44,13 @@ class AnnDataLocator(ABCParse.ABCParse):
         setattr(self, attr, attr_val)
 
     def _intake(self, adata: anndata.AnnData) -> None:
-        """Description.
+        """TBD: Description.
 
         Args:
-            adata (anndata.AnnData)
+            adata (``anndata.AnnData``): param description.
 
         Returns:
-            None, sets class attributes.
-
+            ``None``: Sets class attributes.
         """
         for attr in adata.__dir__():
             if "key" in attr:
@@ -68,10 +66,10 @@ class AnnDataLocator(ABCParse.ABCParse):
         """Description.
 
         Args:
-            passed_key (str)
+            passed_key (``str``): param description.
 
         Returns:
-            (List[str])
+            ``List[str]``: param description.
         """
         return [key for key, val in self._ATTRS.items() if passed_key in val]
 
@@ -79,10 +77,10 @@ class AnnDataLocator(ABCParse.ABCParse):
         """Description.
 
         Args:
-            query_result (List[str])
+            query_result (``List[str]``): param description.
 
         Returns:
-            (str)
+            ``str``: param description.
         """
         return ", ".join(query_result)
 
@@ -90,25 +88,25 @@ class AnnDataLocator(ABCParse.ABCParse):
         """Description.
 
         Args
-            key (str)
+            key (``str``): problematic key.
 
-            query_result (List[str])
+            query_result (``List[str]``): returned list of keys.
 
         Returns:
-            (str)
+            ``str``: formatted_message.
         """
         if len(query_result) > 1:
             return f"Found more than one match: [{self._query_str_vals(query_result)}]"
         return f"{key} NOT FOUND"
 
-    def _format_output_str(self, query_result: List[str]):
+    def _format_output_str(self, query_result: List[str]) -> str:
         """Description.
 
         Args:
-            query_result (List[str])
+            query_result (``List[str]``):
 
         Returns:
-
+            ``str``: Chosen attribute of ``adata`` containing the passed key.
         """
         return query_result[0].split("_keys")[0]
 
@@ -116,12 +114,12 @@ class AnnDataLocator(ABCParse.ABCParse):
         """Description.
 
         Args:
-            adata (anndata.AnnData)
+            adata (``anndata.AnnData``): The [annotated] single-cell data matrix of shape: ``[n_obs × n_vars]``. Rows correspond to cells and columns to genes. [1].
 
-            key (str)
+            key (``str``): Key to access a matrix in adata. For example, if you wanted to access ``adata.obsm['X_pca']``, you would pass: ``"X_pca"``.
 
         Returns:
-            (str)
+            ``str``: Attribute of ``adata`` containing the passed key.
 
         """
         self._intake(adata)
@@ -133,40 +131,35 @@ class AnnDataLocator(ABCParse.ABCParse):
         return self._format_output_str(query_result)
 
     def __call__(self, adata: anndata.AnnData, key: str) -> str:
-        """Description of __call__ func.
+        """Operator that mediates the retrieval of a matrix from ``adata``.
 
         Args:
-            adata (anndata.AnnData)
+            adata (``anndata.AnnData``): The [annotated] single-cell data matrix of shape: ``[n_obs × n_vars]``. Rows correspond to cells and columns to genes. [1].
 
-            key (str)
+            key (``str``): Key to access a matrix in adata. For example, if you wanted to access ``adata.obsm['X_pca']``, you would pass: ``"X_pca"``.
 
         Returns:
-            attr (str)
+            ``str``: Attribute of adata containing the passed key.
         """
 
         return self._forward(adata, key)
 
 
 # -- API-facing function: -----------------------------------------------------
-def locate(adata: anndata.AnnData, key: str, test_kw: List) -> str:
+def locate(adata: anndata.AnnData, key: str) -> str:
     
-    """Given adata and a key that points to a specific matrix stored in adata,
-    return the data, formatted either as np.ndarray or torch.Tensor. If
-    formatted as torch.Tensor, device may be specified based on available
-    devices.
+    """Given ``adata`` and a key that points to a specific matrix stored in
+    ``adata``, return the data, formatted either as ``np.ndarray`` or
+    ``torch.Tensor``. If formatted as ``torch.Tensor``, device may be specified
+    based on available devices.
 
     Args:
-        adata (anndata.AnnData). The (annotated) single-cell data matrix of shape
-        n_obs × n_vars. Rows correspond to cells and columns to genes.
-        For more: https://anndata.readthedocs.io/en/latest/.
+        adata (``anndata.AnnData``): The [annotated] single-cell data matrix of shape: ``[n_obs × n_vars]``. Rows correspond to cells and columns to genes. [1].
 
-        key (str). Key to access a matrix in adata. For example, if you wanted to
-            access adata.obsm['X_pca'], you would pass: "X_pca".
-            
-        test_kw (List). This is just a test. Please find it.
+        key (``str``): Key to access a matrix in adata. For example, if you wanted to access ``adata.obsm['X_pca']``, you would pass: ``"X_pca"``.
 
     Returns:
-        attr_key (str). Attribute of adata containing the passed key.
+        ``str``: Attribute of adata containing the passed key.
     """
 
     locator = AnnDataLocator()
