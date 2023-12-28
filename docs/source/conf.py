@@ -9,6 +9,7 @@ release = '0.1.0'
 # -- config: ------------------------------------------------------------------
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'nbsphinx',
@@ -32,13 +33,13 @@ html_theme_options = {
     "github_url": "https://github.com/mvinyard/AnnDataQuery",
     "twitter_url": "https://twitter.com/vinyard_m",
     "logo": {
-      "image_light": "_static/imgs/adata_query.logo.png",
-      "image_dark": "_static/imgs/adata_query.logo.png",
+      "image_light": "adata_query.logo.png",
+      "image_dark": "adata_query.logo.png",
    },
 }
 autoclass_content = 'init'
 
-favicons = {"rel": "icon", "href": "imgs/magnifying_glass.png"}
+favicons = {"rel": "icon", "href": "magnifying_glass.png"}
 
 # -- notes: -------------------------------------------------------------------
 # For the full list of built-in configuration values, see the documentation:
