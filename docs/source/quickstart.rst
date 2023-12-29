@@ -2,16 +2,16 @@
 Quick Start
 ===========
 
-Install the library
--------------------
+.. role::  raw-html(raw)
+    :format: html
+
+
+Install & import the library
+----------------------------
 
 .. code-block:: shell
 
    pip install adata-query
-
-
-Import the library
-------------------
 
 .. code-block:: python
 
@@ -37,62 +37,101 @@ Once you have some data, you are ready to interface with ``adata_query``.
 ``adata_query.fetch``
 ---------------------
 
-This is probably the most useful function in the library and relies on the two functions, below. In short, this function takes a string and returns a matrix by the string, from ``adata``. You can do this in grouped fashion, based on ``pd.groupby``
+The ``fetch`` function is probably the most useful function in the library. It's also
+the most function most likely to be touched by the user. It relies on the other two 
+functions in the library: ``locate`` and ``format_data``. (described briefly, below). 
 
-Ungrouped
-"""""""""
+In short, this function finds a matrix stored in ``adata`` using ``str`` keyword.
+Importantly, this function allows the user to do this in a grouped fashion, based
+on ``pd.groupby``
 
-.. code-block:: python
+.. tab-set::
 
-   import adata_query
+   .. tab-item:: Ungrouped
 
-   key = "X_pca" # stored in adata.obsm
-   data = adata_query.fetch(adata = adata, key = "X_pca")
+      .. card:: Ungrouped
 
+         .. code-block:: python
 
-Grouped
-"""""""
+            key = "X_pca" # stored in adata.obsm
 
-.. code-block:: python
+            data = adata_query.fetch(adata = adata, key = "X_pca")
 
-   import adata_query
+   .. tab-item:: Grouped
 
-   key = "X_pca" # stored in adata.obsm
+      .. card:: Grouped
+         
+         .. code-block:: python
 
-   groupby = "cluster" # cell annotation in adata.obs
+            key = "X_pca" # stored in adata.obsm
+            groupby = "cluster" # cell annotation in adata.obs
 
-   data = adata_query.fetch(
-      adata = adata,
-      key = key,
-      groupby = groupby,
-   )
+            data = adata_query.fetch(
+               adata = adata,
+               key = key,
+               groupby = groupby,
+            )
 
-In this example, the returned data is now of type: List.
+         In this example, ``data`` is returned as ``List``.
 
 
 ``adata_query.format_data``
 ---------------------------
-These functions seem trivial, but they become useful for adding flexibility into more complex workflows. 
+This function allows us to automatically format data stored as
+``np.ndarray`` as a ``torch.Tensor``, on any device.
 
-For some data stored as np.ndarray.
+.. tab-set::
 
-numpy to numpy
+   .. tab-item:: numpy :raw-html:`&rarr;` numpy
 
-.. code-block:: python
+      .. card:: numpy :raw-html:`&rarr;` numpy
 
-   import adata_query
+         .. code-block:: python
 
-   data = adata_query.format(data) # returns np.ndarray
+            data = adata_query.format(data) # returns np.ndarray
+
+   .. tab-item:: numpy :raw-html:`&rarr;` torch (cpu)
+
+      .. card:: numpy :raw-html:`&rarr;` torch (cpu)
+         
+         .. code-block:: python
+                        
+            data = adata_query.format(data, torch = True, device = "cpu") # torch.Tensor on cpu
+            
+
+   .. tab-item:: numpy :raw-html:`&rarr;` torch (gpu)
+
+      .. card:: numpy :raw-html:`&rarr;` torch (gpu)
+         
+         .. code-block:: python
+
+            data = adata_query.format(data, torch = True) # torch.Tensor on gpu, if available
+
+            # torch.Tensor can also be explicitly declared to a specific device
+            data = adata_query.format(data, torch = True, device = "cuda:0")
+            
+            # Apple Silicon also works and will be automatically detected
+            data = adata_query.format(data, torch = True, device = "mps:0")
+
 
 
 ``adata_query.locate``
 ----------------------
-I don't anticipate this function to be widely used beyond its implementation in ``adata_query.fetch``.
+This function simply returns the sub-container location of a matrix,
+given its accessor key. While useful in the implementation of the 
+``adata_query.fetch`` function, it is not anticipated to be widely-used
+beyond that scope.
 
-.. code-block:: python
+.. card::
+   .. code-block:: python
 
-   import adata_query
+      import adata_query
 
-   key = "X_pca"
-   
-   attr_key = adata_query.locate(adata, key = key) # attr_key = "obsm"
+      key = "X_pca"
+      attr_key = adata_query.locate(adata, key = key) # attr_key = "obsm"
+
+
+.. note::
+
+   While both the ``format_data`` and ``locate`` functions may seem trivial,
+   they are useful in adding flexibility to complex workflows.

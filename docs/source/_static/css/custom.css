@@ -14,6 +14,11 @@ class-header {
     color: #654199;
 }
 
+html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
+    background: transparent;
+    border-radius: .25rem;
+    }
+
 /* for the drop-down card */
 /* .sd-summary-title.sd-card-header {
     font-size: 23px;
