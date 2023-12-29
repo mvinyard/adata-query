@@ -11,10 +11,16 @@
     </embed>
 
 .. image:: _static/adata_query.header.png
-  :width: 600
-  :alt: adata-query-header-logo
-  :align: left
+   :width: 600
+   :alt: adata-query-header-logo-light
+   :align: left
+   :class: only-light
 
+.. image:: _static/adata_query.header.dark_mode.png
+   :width: 600
+   :alt: adata-query-header-logo-dark
+   :align: left
+   :class: only-dark
 
 .. raw:: html
 
