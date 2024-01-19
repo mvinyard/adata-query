@@ -56,7 +56,7 @@ class AnnDataLocator(ABCParse.ABCParse):
             if "key" in attr:
                 attr_val = getattr(adata, attr)()
                 self._stash(attr, attr_val)
-            if attr == "layers":
+            if attr in ["layers", "obsp"]:
                 attr_val = list(getattr(adata, attr))
                 self._stash(attr, attr_val)
             if attr in self._searchable:
