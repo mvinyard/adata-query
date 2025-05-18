@@ -1,12 +1,14 @@
-
 # -- import packages: ----------------------------------------------------------
 import ABCParse
 import anndata
+import logging
 import numpy as np
 
-
-# -- set typing: ---------------------------------------------------------------
+# -- set type hints: -----------------------------------------------------------
 from typing import List, Optional
+
+# -- configure logger: ---------------------------------------------------------
+logger = logging.getLogger(__name__)
 
 
 # -- operational class: --------------------------------------------------------
@@ -26,6 +28,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         self._searchable = ['X']
         if not searchable is None:
              self._searchable += searchable
+        logger.debug(f"Initialized AnnDataLocator with searchable: {self._searchable}")
 
     def _stash(self, attr: str, attr_val: np.ndarray) -> None:
         """
@@ -41,6 +44,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         """
         self._ATTRS[attr] = attr_val
         setattr(self, attr, attr_val)
+        logger.debug(f"Stashed attribute: {attr}")
 
     def _intake(self, adata: anndata.AnnData) -> None:
         """
@@ -52,6 +56,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         -------
         
         """
+        logger.debug("Starting data intake from AnnData object")
         for attr in adata.__dir__():
             if "key" in attr:
                 attr_val = getattr(adata, attr)()
@@ -61,6 +66,7 @@ class AnnDataLocator(ABCParse.ABCParse):
                 self._stash(attr, attr_val)
             if attr in self._searchable:
                 self._stash(attr, attr)
+        logger.debug(f"Completed data intake. Available attributes: {list(self._ATTRS.keys())}")
 
     def _cross_reference(self, passed_key: str) -> List[str]:
         """
@@ -71,7 +77,9 @@ class AnnDataLocator(ABCParse.ABCParse):
         -------
         
         """
-        return [key for key, val in self._ATTRS.items() if passed_key in val]
+        matches = [key for key, val in self._ATTRS.items() if passed_key in val]
+        logger.debug(f"Cross reference for key '{passed_key}' found matches: {matches}")
+        return matches
 
     def _query_str_vals(self, query_result: List[str]) -> str:
         """
@@ -94,8 +102,12 @@ class AnnDataLocator(ABCParse.ABCParse):
         
         """
         if len(query_result) > 1:
-            return f"Found more than one match: [{self._query_str_vals(query_result)}]"
-        return f"{key} NOT FOUND"
+            msg = f"Found more than one match: [{self._query_str_vals(query_result)}]"
+            logger.warning(msg)
+            return msg
+        msg = f"{key} NOT FOUND"
+        logger.error(msg)
+        return msg
 
     def _format_output_str(self, query_result: List[str]):
         """
@@ -118,13 +130,16 @@ class AnnDataLocator(ABCParse.ABCParse):
         -------
         
         """
+        logger.info(f"Locating key '{key}' in AnnData object")
         self._intake(adata)
         query_result = self._cross_reference(passed_key=key)
 
         if len(query_result) != 1:
             raise KeyError(self._format_error_msg(key, query_result))
 
-        return self._format_output_str(query_result)
+        result = self._format_output_str(query_result)
+        logger.info(f"Successfully located key '{key}' in attribute: {result}")
+        return result
 
     def __call__(self, adata: anndata.AnnData, key: str) -> str:
         
@@ -142,7 +157,7 @@ class AnnDataLocator(ABCParse.ABCParse):
 
         return self._forward(adata, key)
 
-    
+
 def locate(adata: anndata.AnnData, key: str) -> str:
     """
     Given, adata and a key that points to a specific matrix stored in adata,
@@ -162,5 +177,6 @@ def locate(adata: anndata.AnnData, key: str) -> str:
     attr_key: str
         Attribute of adata containing the passed key
     """
+    logger.info(f"Locate function called for key: {key}")
     locator = AnnDataLocator()
     return locator(adata = adata, key = key)

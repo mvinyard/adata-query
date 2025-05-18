@@ -1,8 +1,8 @@
-
 # -- import packages: ----------------------------------------------------------
 import ABCParse
 import autodevice
 import anndata
+import logging
 import numpy as np
 import torch as _torch
 
@@ -10,12 +10,16 @@ import torch as _torch
 # -- set typing: ---------------------------------------------------------------
 from typing import Union
 
+# -- configure logger: ---------------------------------------------------------
+logger = logging.getLogger(__name__)
+
 
 # -- operational class: --------------------------------------------------------
 class DataFormatter(ABCParse.ABCParse):
     """Format data to interface with numpy or torch, on a specified device."""
     def __init__(self, data: Union[_torch.Tensor, np.ndarray], *args, **kwargs):
         self.__parse__(locals())
+        logger.debug(f"Initialized DataFormatter with data type: {type(data)}")
 
     @property
     def device_type(self) -> str:
@@ -51,30 +55,31 @@ class DataFormatter(ABCParse.ABCParse):
 
     def to_numpy(self) -> np.ndarray:
         """Sends data to np.ndarray"""
+        logger.debug("Converting data to numpy array")
         if self.is_torch_Tensor:
             if self.on_gpu:
+                logger.debug("Converting GPU tensor to numpy array")
                 return self._data.detach().cpu().numpy()
+            logger.debug("Converting CPU tensor to numpy array")
             return self._data.numpy()
         elif self.is_ArrayView:
+            logger.debug("Converting ArrayView to numpy array")
             return self._data.toarray()
+        logger.debug("Data already in numpy format")
         return self._data
 
     def to_torch(self, device=autodevice.AutoDevice()) -> _torch.Tensor:
-        """
-        Parameters
-        ----------
-        device: torch.device
-
-        Returns
-        -------
-        torch.Tensor
-        """
+        """Convert data to torch tensor on specified device"""
+        logger.debug(f"Converting data to torch tensor on device: {device}")
         self.__update__(locals())
 
         if self.is_torch_Tensor:
+            logger.debug(f"Moving existing tensor to device: {device}")
             return self._data.to(self._device)
         elif self.is_ArrayView:
+            logger.debug("Converting ArrayView to numpy before torch conversion")
             self._data = self._data.toarray()
+        logger.debug("Converting numpy array to torch tensor")
         return _torch.Tensor(self._data).to(self._device)
 
 
@@ -84,24 +89,8 @@ def format_data(
     torch: bool = False, 
     device: _torch.device = autodevice.AutoDevice(),
 ):
-    """
-    Given, adata and a key that points to a specific matrix stored in adata,  return the data,
-    formatted either as np.ndarray or torch.Tensor. If formatted as torch.Tensor, device may be
-    specified based on available devices.
-    
-    Parameters
-    ----------
-    data: Union[np.ndarray, torch.Tensor] [ required ]
-        Input data to be formatted. Typically an np.ndarray, torch.Tensor, or ArrayView.
-    
-    torch: bool, default = False
-        Boolean indicator of whether data should be formatted as torch.Tensor. If False
-        (default), data is formatted as np.ndarray.
-    
-    device: torch.device, default = autodevice.AutoDevice()
-        Should torch=True, the device ("cpu", "cuda:N", "mps:N") may be set. The default value,
-        autodevice.AutoDevice() will indicate the use of GPU, if available.
-    """
+    logger.info(f"Formatting data as {'torch tensor' if torch else 'numpy array'}" + 
+                (f" on device: {device}" if torch else ""))
     formatter = DataFormatter(data=data)
     if torch:
         return formatter.to_torch(device=device)
