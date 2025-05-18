@@ -19,7 +19,7 @@ from typing import Dict, List, Optional, Union
 # -- operational class: --------------------------------------------------------
 class AnnDataFetcher(ABCParse.ABCParse):
     """Operational class powering the fetch function."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
 
         self.__parse__(locals(), public=[None])
 
