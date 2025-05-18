@@ -6,32 +6,53 @@ import logging
 import torch as _torch
 import numpy as np
 
-# -- configure logger: ---------------------------------------------------------
-logger = logging.getLogger(__name__)
-
-
 # -- import local dependencies: ------------------------------------------------
 from ._locator import locate
 from ._formatter import format_data
 
-
 # -- set typing: ---------------------------------------------------------------
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any, Generator, Tuple
+
+# -- configure logger: ---------------------------------------------------------
+logger = logging.getLogger(__name__)
 
 
-# -- operational class: --------------------------------------------------------
 class AnnDataFetcher(ABCParse.ABCParse):
-    """Operational class powering the fetch function."""
+    """Fetches and formats data from AnnData objects.
+    
+    This class provides functionality to retrieve data from AnnData objects, with options
+    for grouping, tensor conversion, and device placement. It handles both direct data
+    access and grouped data retrieval.
+    
+    Attributes:
+        _GROUPED: Property that returns a pandas GroupBy object when groupby is specified.
+    """
+
     def __init__(self, *args, **kwargs) -> None:
+        """Initialize the AnnDataFetcher."""
         self.__parse__(locals(), public=[None])
         logger.debug("Initialized AnnDataFetcher")
 
     @property
     def _GROUPED(self):
+        """Get the grouped data from AnnData.obs.
+        
+        Returns:
+            pandas GroupBy object for the specified groupby column.
+        """
         logger.debug(f"Grouping data by: {self._groupby}")
         return self._adata.obs.groupby(self._groupby)
 
-    def _forward(self, adata, key):
+    def _forward(self, adata: anndata.AnnData, key: str) -> Union[_torch.Tensor, np.ndarray]:
+        """Retrieve and format data for a single key.
+        
+        Args:
+            adata: AnnData object to fetch data from.
+            key: Key to fetch data for.
+            
+        Returns:
+            Formatted data as either torch.Tensor or np.ndarray.
+        """
         logger.debug(f"Fetching data for key: {key}")
         if key == "X":
             data = getattr(adata, "X")
@@ -42,7 +63,21 @@ class AnnDataFetcher(ABCParse.ABCParse):
             logger.debug(f"Retrieved data from adata.{attr}['{key}']")
         return format_data(data=data, torch=self._torch, device=self._device)
 
-    def _grouped_subroutine(self, adata, key):
+    def _grouped_subroutine(
+        self, 
+        adata: anndata.AnnData, 
+        key: str
+    ) -> Generator[Union[Tuple[str, Union[_torch.Tensor, np.ndarray]], Union[_torch.Tensor, np.ndarray]], None, None]:
+        """Process data for each group when groupby is specified.
+        
+        Args:
+            adata: AnnData object to fetch data from.
+            key: Key to fetch data for.
+            
+        Yields:
+            If as_dict is True: Tuples of (group_name, formatted_data)
+            If as_dict is False: Formatted data for each group
+        """
         logger.info(f"Processing grouped data for key: {key}")
         if self._as_dict:
             for group, group_df in self._GROUPED:
@@ -61,33 +96,41 @@ class AnnDataFetcher(ABCParse.ABCParse):
         torch: bool = False,
         device: _torch.device = autodevice.AutoDevice(),
         as_dict: bool = True,
-    ):
-        """
-        adata: anndata.AnnData [ required ]
-            Annotated single-cell data object.
+    ) -> Union[
+        _torch.Tensor,
+        np.ndarray,
+        List[Union[_torch.Tensor, np.ndarray]],
+        Dict[str, Union[_torch.Tensor, np.ndarray]]
+    ]:
+        """Fetch and format data from an AnnData object.
         
-        key: str [ required ]
-            Key to access a matrix in adata. For example, if you wanted to access
-            adata.obsm['X_pca'], you would pass: "X_pca".
-        
-        groupby: Optional[str], default = None
-            Optionally, one may choose to group data according to a cell-specific
-            annotation in adata.obs. This would invoke returning data as List
-            
-        torch: bool, default = False
-            Boolean indicator of whether data should be formatted as torch.Tensor. If
-            False (default), data is formatted as np.ndarray.device (torch.device) =
-            autodevice.AutoDevice(). Should torch=True, the device ("cpu", "cuda:N", 
-            "mps:N") may be set. The default value, autodevice.AutoDevice() will 
-            indicate the use of GPU, if available.
-
-        device: torch.device, default = autodevice.AutoDevice()
-            
-    
-        as_dict: bool, default = True
-            Only relevant when `groupby` is not None. Boolean indicator to return
-            data in a Dict where the key for each value corresponds to the respective
-            `groupby` value. If False, returns List.
+        Args:
+            adata: AnnData object to fetch data from.
+            key: Key to fetch data for (e.g., "X_pca" for adata.obsm['X_pca']).
+            groupby: Optional column name in adata.obs to group data by.
+            torch: Whether to return data as torch.Tensor (True) or np.ndarray (False).
+            device: Device to place tensor on if torch=True.
+            as_dict: When groupby is specified, whether to return data as a dictionary
+                    with group names as keys (True) or as a list (False).
+                    
+        Returns:
+            If groupby is None:
+                Single array/tensor for the specified key
+            If groupby is specified and as_dict is True:
+                Dictionary mapping group names to arrays/tensors
+            If groupby is specified and as_dict is False:
+                List of arrays/tensors for each group
+                
+        Example:
+            >>> import anndata
+            >>> adata = anndata.AnnData(X=[[1, 2], [3, 4]])
+            >>> adata.obs['cell_type'] = ['A', 'B']
+            >>> adata.obsm['X_pca'] = [[0.1, 0.2], [0.3, 0.4]]
+            >>> fetcher = AnnDataFetcher()
+            >>> # Get single array
+            >>> data = fetcher(adata, "X_pca")
+            >>> # Get grouped data as dictionary
+            >>> grouped_data = fetcher(adata, "X_pca", groupby="cell_type")
         """
         logger.info(f"Fetch called for key: {key}" + (f" with groupby: {groupby}" if groupby else ""))
         self.__update__(locals(), public=[None])
@@ -98,6 +141,7 @@ class AnnDataFetcher(ABCParse.ABCParse):
                 return dict(self._grouped_subroutine(adata, key))
             return list(self._grouped_subroutine(adata, key))
         return self._forward(adata, key)
+
 
 def fetch(
     adata: anndata.AnnData,
@@ -112,45 +156,42 @@ def fetch(
     _torch.Tensor,
     np.ndarray,
     List[Union[_torch.Tensor, np.ndarray]],
-    Dict[Union[str, int], Union[_torch.Tensor, np.ndarray]],
+    Dict[str, Union[_torch.Tensor, np.ndarray]]
 ]:
-    """
-    Given, adata and a key that points to a specific matrix stored in adata,
-    return the data, formatted either as np.ndarray or torch.Tensor. If formatted
-    as torch.Tensor, device may be specified based on available devices.
-
-    Parameters
-    ----------
-    adata: anndata.AnnData [ required ]
-        Annotated single-cell data object.
-
-    key: str [ required ]
-        Key to access a matrix in adata. For example, if you wanted to access
-        adata.obsm['X_pca'], you would pass: "X_pca".
-
-    groupby: Optional[str], default = None
-        Optionally, one may choose to group data according to a cell-specific
-        annotation in adata.obs. This would invoke returning data as List
-
-    torch: bool, default = False
-        Boolean indicator of whether data should be formatted as torch.Tensor. If
-        False (default), data is formatted as np.ndarray.device (torch.device) =
-        autodevice.AutoDevice(). Should torch=True, the device ("cpu", "cuda:N",
-        "mps:N") may be set. The default value, autodevice.AutoDevice() will
-        indicate the use of GPU, if available.
-
-    as_dict: bool, default = True
-        Only relevant when `groupby` is not None. Boolean indicator to return
-        data in a Dict where the key for each value corresponds to the respective
-        `groupby` value. If False, returns List.
-
-    Returns
-    -------
-    data: Union[torch.Tensor, np.ndarray, List[Union[torch.Tensor, np.ndarray]], Dict[Union[str, int], Union[torch.Tensor, np.ndarray]]
-        Formatted data as np.ndarray or torch.Tensor. If torch=True the torch.Tensor
-        is allocated to the device indicated by the device argument. If `groupby` is passed,
-        returned as Dict[np.ndarray] or Dict[torch.Tensor]. If groupby is passed and `as_dict`
-        = False, returns List[np.ndarray] or List[torch.Tensor].
+    """Fetch and format data from an AnnData object.
+    
+    This function provides a convenient interface to retrieve and format data from AnnData
+    objects. It supports both direct data access and grouped data retrieval, with options
+    for tensor conversion and device placement.
+    
+    Args:
+        adata: AnnData object to fetch data from.
+        key: Key to fetch data for (e.g., "X_pca" for adata.obsm['X_pca']).
+        groupby: Optional column name in adata.obs to group data by.
+        torch: Whether to return data as torch.Tensor (True) or np.ndarray (False).
+        device: Device to place tensor on if torch=True.
+        as_dict: When groupby is specified, whether to return data as a dictionary
+                with group names as keys (True) or as a list (False).
+                
+    Returns:
+        If groupby is None:
+            Single array/tensor for the specified key
+        If groupby is specified and as_dict is True:
+            Dictionary mapping group names to arrays/tensors
+        If groupby is specified and as_dict is False:
+            List of arrays/tensors for each group
+            
+    Example:
+        >>> import anndata
+        >>> adata = anndata.AnnData(X=[[1, 2], [3, 4]])
+        >>> adata.obs['cell_type'] = ['A', 'B']
+        >>> adata.obsm['X_pca'] = [[0.1, 0.2], [0.3, 0.4]]
+        >>> # Get single array
+        >>> data = fetch(adata, "X_pca")
+        >>> # Get grouped data as dictionary
+        >>> grouped_data = fetch(adata, "X_pca", groupby="cell_type")
+        >>> # Get tensor on GPU
+        >>> tensor_data = fetch(adata, "X_pca", torch=True)
     """
     logger.info(f"Fetch function called for key: {key}" + (f" with groupby: {groupby}" if groupby else ""))
     fetcher = AnnDataFetcher()
