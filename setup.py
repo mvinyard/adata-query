@@ -1,19 +1,24 @@
-
-# -- import packages: ----------------------------------------------------------
+# -- import packages: ---------------------------------------------------------
 import setuptools
 import re
 import os
 import sys
 
+# -- constants: ---------------------------------------------------------------
+name = "adata_query"
 
-# -- run setup: ----------------------------------------------------------------
-
-with open('requirements.txt') as f:
+# -- fetch: -------------------------------------------------------------------
+with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
+with open(f"{name}/__version__.py") as v:
+    exec(v.read())
+
+
+# -- run setup: ---------------------------------------------------------------
 setuptools.setup(
-    name="adata_query",
-    version="0.0.2",
+    name=name,
+    version=__version__,
     python_requires=">3.9.0",
     author="Michael E. Vinyard",
     author_email="mvinyard.ai@gmail.com",
