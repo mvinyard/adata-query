@@ -183,8 +183,10 @@ def format_data(
     """
     if device is None:
         device = autodevice.AutoDevice()
-    logger.info(f"Formatting data as {'torch tensor' if torch else 'numpy array'}" + 
-                (f" on device: {device}" if torch else ""))
+    logger.debug(
+        f"Formatting data as {'torch tensor' if torch else 'numpy array'}"
+        + (f" on device: {device}" if torch else "")
+    )
     formatter = DataFormatter(data=data)
     if torch:
         return formatter.to_torch(device=device)

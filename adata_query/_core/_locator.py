@@ -34,7 +34,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         self._ATTRS = {}
         self._searchable = ['X']
         if not searchable is None:
-             self._searchable += searchable
+            self._searchable += searchable
         logger.debug(f"Initialized AnnDataLocator with searchable: {self._searchable}")
 
     def _stash(self, attr: str, attr_val: Any) -> None:
@@ -135,7 +135,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         Raises:
             KeyError: If the key is not found or has multiple matches.
         """
-        logger.info(f"Locating key '{key}' in AnnData object")
+        logger.debug(f"Locating key '{key}' in AnnData object")
         self._intake(adata)
         query_result = self._cross_reference(passed_key=key)
 
@@ -143,7 +143,7 @@ class AnnDataLocator(ABCParse.ABCParse):
             raise KeyError(self._format_error_msg(key, query_result))
 
         result = self._format_output_str(query_result)
-        logger.info(f"Successfully located key '{key}' in attribute: {result}")
+        logger.debug(f"Successfully located key '{key}' in attribute: {result}")
         return result
 
     def __call__(self, adata: anndata.AnnData, key: str) -> str:
@@ -186,6 +186,6 @@ def locate(adata: anndata.AnnData, key: str) -> str:
         >>> locate(adata, "X_pca")
         'obsm'
     """
-    logger.info(f"Locate function called for key: {key}")
+    logger.debug(f"Locate function called for key: {key}")
     locator = AnnDataLocator()
     return locator(adata=adata, key=key)

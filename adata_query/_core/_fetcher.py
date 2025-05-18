@@ -78,7 +78,7 @@ class AnnDataFetcher(ABCParse.ABCParse):
             If as_dict is True: Tuples of (group_name, formatted_data)
             If as_dict is False: Formatted data for each group
         """
-        logger.info(f"Processing grouped data for key: {key}")
+        logger.debug(f"Processing grouped data for key: {key}")
         if self._as_dict:
             for group, group_df in self._GROUPED:
                 logger.debug(f"Processing group: {group}")
@@ -132,11 +132,16 @@ class AnnDataFetcher(ABCParse.ABCParse):
             >>> # Get grouped data as dictionary
             >>> grouped_data = fetcher(adata, "X_pca", groupby="cell_type")
         """
-        logger.info(f"Fetch called for key: {key}" + (f" with groupby: {groupby}" if groupby else ""))
+        logger.debug(
+            f"Fetch called for key: {key}"
+            + (f" with groupby: {groupby}" if groupby else "")
+        )
         self.__update__(locals(), public=[None])
 
         if hasattr(self, "_groupby"):
-            logger.info(f"Returning grouped data as {'dictionary' if self._as_dict else 'list'}")
+            logger.debug(
+                f"Returning grouped data as {'dictionary' if self._as_dict else 'list'}"
+            )
             if self._as_dict:
                 return dict(self._grouped_subroutine(adata, key))
             return list(self._grouped_subroutine(adata, key))
@@ -193,7 +198,10 @@ def fetch(
         >>> # Get tensor on GPU
         >>> tensor_data = fetch(adata, "X_pca", torch=True)
     """
-    logger.info(f"Fetch function called for key: {key}" + (f" with groupby: {groupby}" if groupby else ""))
+    logger.debug(
+        f"Fetch function called for key: {key}"
+        + (f" with groupby: {groupby}" if groupby else "")
+    )
     fetcher = AnnDataFetcher()
     return fetcher(
         adata=adata,
