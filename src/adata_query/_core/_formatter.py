@@ -1,5 +1,4 @@
-# -- import packages: ----------------------------------------------------------
-import ABCParse
+# -- import packages: ---------------------------------------------------------
 import autodevice
 import anndata
 import logging
@@ -7,15 +6,15 @@ import numpy as np
 import torch as _torch
 
 
-# -- set typing: ---------------------------------------------------------------
-from typing import Union, Optional
+# -- set typing: --------------------------------------------------------------
+from typing import Optional, Union
 
-# -- configure logger: ---------------------------------------------------------
+# -- configure logger: --------------------------------------------------------
 logger = logging.getLogger(__name__)
 
 
-# -- operational class: --------------------------------------------------------
-class DataFormatter(ABCParse.ABCParse):
+# -- operational class: -------------------------------------------------------
+class DataFormatter:
     """Format data to interface with numpy or torch, on a specified device.
     
     This class provides functionality to convert data between numpy arrays and torch tensors,
@@ -32,7 +31,7 @@ class DataFormatter(ABCParse.ABCParse):
         Args:
             data: Input data to format (numpy array, torch tensor, or ArrayView).
         """
-        self.__parse__(locals())
+        self._data = data
         logger.debug(f"Initialized DataFormatter with data type: {type(data)}")
 
     @property
@@ -140,12 +139,15 @@ class DataFormatter(ABCParse.ABCParse):
             device(type='cuda', index=0)
         """
         if device is None:
-            device = autodevice.AutoDevice()
-        logger.debug(f"Converting data to torch tensor on device: {device}")
-        self.__update__(locals())
+            self._device = autodevice.AutoDevice()
+
+        else:
+            self._device = device
+
+        logger.debug(f"Converting data to torch tensor on device: {self._device}")
 
         if self.is_torch_Tensor:
-            logger.debug(f"Moving existing tensor to device: {device}")
+            logger.debug(f"Moving existing tensor to device: {self._device}")
             return self._data.to(self._device)
         elif self.is_ArrayView:
             logger.debug("Converting ArrayView to numpy before torch conversion")

@@ -8,12 +8,36 @@ Fetch data matrices from AnnData and format as `np.ndarray` or `torch.Tensor`, o
 
 ## Installation
 
-```python
+### Using UV (Recommended)
+
+```bash
+# Install the package
+uv add adata-query
+
+# Or for development
+uv pip install -e .
+```
+
+### Using pip
+
+```bash
 pip install adata-query
+```
+
+### Development Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/mvinyard/AnnDataQuery.git
+cd AnnDataQuery
+
+# Install with UV (recommended)
+uv sync --dev
+
+# Or with pip
+pip install -e .
 ```
 
 ## Get started
 
 Example: [notebook](https://colab.research.google.com/github/mvinyard/AnnDataQuery/blob/main/notebooks/anndata_query_tutorial.ipynb)
-
-For more information, see: [documentation](https://michael-vinyard.gitbook.io/anndataquery/)

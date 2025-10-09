@@ -1,23 +1,24 @@
-# -- import packages: ----------------------------------------------------------
-import ABCParse
-import autodevice
+# -- import packages: ---------------------------------------------------------
 import anndata
+import autodevice
 import logging
-import torch as _torch
 import numpy as np
+import torch as _torch
 
-# -- import local dependencies: ------------------------------------------------
+
+# -- import local dependencies: -----------------------------------------------
 from ._locator import locate
 from ._formatter import format_data
 
-# -- set typing: ---------------------------------------------------------------
-from typing import Dict, List, Optional, Union, Any, Generator, Tuple
+# -- set typing: --------------------------------------------------------------
+from typing import Dict, Generator, List, Optional, Tuple, Union
 
-# -- configure logger: ---------------------------------------------------------
+# -- configure logger: --------------------------------------------------------
 logger = logging.getLogger(__name__)
 
 
-class AnnDataFetcher(ABCParse.ABCParse):
+# -- operational class: -------------------------------------------------------
+class AnnDataFetcher:
     """Fetches and formats data from AnnData objects.
     
     This class provides functionality to retrieve data from AnnData objects, with options
@@ -30,7 +31,7 @@ class AnnDataFetcher(ABCParse.ABCParse):
 
     def __init__(self, *args, **kwargs) -> None:
         """Initialize the AnnDataFetcher."""
-        self.__parse__(locals(), public=[None])
+
         logger.debug("Initialized AnnDataFetcher")
 
     @property
@@ -136,16 +137,22 @@ class AnnDataFetcher(ABCParse.ABCParse):
             f"Fetch called for key: {key}"
             + (f" with groupby: {groupby}" if groupby else "")
         )
-        self.__update__(locals(), public=[None])
+        
+        self._adata = adata
+        self._key = key
+        self._groupby = groupby
+        self._torch = torch
+        self._device = device
+        self._as_dict = as_dict
 
         if hasattr(self, "_groupby"):
             logger.debug(
                 f"Returning grouped data as {'dictionary' if self._as_dict else 'list'}"
             )
             if self._as_dict:
-                return dict(self._grouped_subroutine(adata, key))
-            return list(self._grouped_subroutine(adata, key))
-        return self._forward(adata, key)
+                return dict(self._grouped_subroutine(self._adata, self._key))
+            return list(self._grouped_subroutine(self._adata, self._key))
+        return self._forward(self._adata, self._key)
 
 
 def fetch(
