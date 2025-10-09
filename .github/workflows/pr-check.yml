@@ -76,8 +76,7 @@ jobs:
       
       - name: Check PR description
         run: |
-          description="${{ github.event.pull_request.body }}"
-          if [ -z "$description" ] || [ ${#description} -lt 20 ]; then
+          if [ ${#PR_BODY} -lt 20 ]; then
             echo "⚠️ PR description is very short. Consider adding more details about your changes."
             echo "This is not blocking, but helpful for reviewers."
           else
