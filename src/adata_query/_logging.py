@@ -3,7 +3,6 @@ import logging
 import pathlib
 import sys
 
-
 # -- constants: ---------------------------------------------------------------
 NAME = "adata_query"
 
@@ -35,7 +34,7 @@ def configure_logging(
     # Create .log_cache directory if it doesn't exist
     log_dir = pathlib.Path(log_dir)
     log_dir.mkdir(exist_ok=True)
-    
+
     # Update log_file path to include the directory
     log_file_path = log_dir / log_file
 

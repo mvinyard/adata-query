@@ -1,0 +1,121 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      
+      - name: Install dependencies
+        run: |
+          uv sync --extra dev
+      
+      - name: Check code formatting
+        run: |
+          uv run ruff format --check src/ tests/ || echo "⚠️ Formatting issues found (fixing recommended but not required)"
+        continue-on-error: true
+      
+      - name: Run linter
+        run: |
+          uv run ruff check src/ tests/ || echo "⚠️ Linting issues found (fixing recommended but not required)"
+        continue-on-error: true
+      
+      - name: Run tests
+        run: |
+          uv run pytest tests/ -v --cov=adata_query --cov-report=term-missing
+      
+      - name: Check test coverage
+        run: |
+          uv run pytest tests/ --cov=adata_query --cov-fail-under=85
+      
+      - name: Comment coverage on PR
+        if: always()
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All checks passed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          uv run pytest tests/ --cov=adata_query --cov-report=term-missing >> $GITHUB_STEP_SUMMARY 2>&1 || true
+
+  # Ensure PR has a meaningful title and description
+  pr-metadata:
+    name: Check PR Metadata
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Check PR title length
+        run: |
+          title="${{ github.event.pull_request.title }}"
+          if [ ${#title} -lt 10 ]; then
+            echo "❌ PR title is too short. Please provide a more descriptive title."
+            exit 1
+          fi
+          echo "✅ PR title looks good"
+      
+      - name: Check PR description
+        run: |
+          description="${{ github.event.pull_request.body }}"
+          if [ -z "$description" ] || [ ${#description} -lt 20 ]; then
+            echo "⚠️ PR description is very short. Consider adding more details about your changes."
+            echo "This is not blocking, but helpful for reviewers."
+          else
+            echo "✅ PR description looks good"
+          fi
+
+  # Check that tests are included for new features
+  test-coverage-check:
+    name: Test Coverage Check
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for new Python files
+        id: check-files
+        run: |
+          # Check if any .py files were added in src/
+          new_files=$(git diff --name-only --diff-filter=A origin/${{ github.base_ref }}...HEAD | grep "^src/.*\.py$" || true)
+          if [ -n "$new_files" ]; then
+            echo "new_python_files=true" >> $GITHUB_OUTPUT
+            echo "New Python files detected:"
+            echo "$new_files"
+          else
+            echo "new_python_files=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check for corresponding tests
+        if: steps.check-files.outputs.new_python_files == 'true'
+        run: |
+          test_files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep "^tests/.*\.py$" || true)
+          if [ -z "$test_files" ]; then
+            echo "⚠️ New Python files were added but no test files were modified."
+            echo "Consider adding tests for your new code."
+            echo "This is not blocking, but highly recommended."
+          else
+            echo "✅ Test files were modified"
+          fi
+

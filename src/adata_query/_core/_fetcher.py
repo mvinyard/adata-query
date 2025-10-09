@@ -1,17 +1,17 @@
 # -- import packages: ---------------------------------------------------------
+import logging
+from collections.abc import Generator
+
+# -- set typing: --------------------------------------------------------------
 import anndata
 import autodevice
-import logging
 import numpy as np
 import torch as _torch
 
+from ._formatter import format_data
 
 # -- import local dependencies: -----------------------------------------------
 from ._locator import locate
-from ._formatter import format_data
-
-# -- set typing: --------------------------------------------------------------
-from typing import Dict, Generator, List, Optional, Tuple, Union
 
 # -- configure logger: --------------------------------------------------------
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ class AnnDataFetcher:
         logger.debug(f"Grouping data by: {self._groupby}")
         return self._adata.obs.groupby(self._groupby)
 
-    def _forward(self, adata: anndata.AnnData, key: str) -> Union[_torch.Tensor, np.ndarray]:
+    def _forward(self, adata: anndata.AnnData, key: str) -> _torch.Tensor | np.ndarray:
         """Retrieve and format data for a single key.
         
         Args:
@@ -56,7 +56,7 @@ class AnnDataFetcher:
         """
         logger.debug(f"Fetching data for key: {key}")
         if key == "X":
-            data = getattr(adata, "X")
+            data = adata.X
             logger.debug("Retrieved data from adata.X")
         else:
             attr = locate(adata, key)
@@ -65,10 +65,10 @@ class AnnDataFetcher:
         return format_data(data=data, torch=self._torch, device=self._device)
 
     def _grouped_subroutine(
-        self, 
-        adata: anndata.AnnData, 
+        self,
+        adata: anndata.AnnData,
         key: str
-    ) -> Generator[Union[Tuple[str, Union[_torch.Tensor, np.ndarray]], Union[_torch.Tensor, np.ndarray]], None, None]:
+    ) -> Generator[tuple[str, _torch.Tensor | np.ndarray] | _torch.Tensor | np.ndarray, None, None]:
         """Process data for each group when groupby is specified.
         
         Args:
@@ -93,16 +93,11 @@ class AnnDataFetcher:
         self,
         adata: anndata.AnnData,
         key: str,
-        groupby: Optional[str] = None,
+        groupby: str | None = None,
         torch: bool = False,
         device: _torch.device = autodevice.AutoDevice(),
         as_dict: bool = True,
-    ) -> Union[
-        _torch.Tensor,
-        np.ndarray,
-        List[Union[_torch.Tensor, np.ndarray]],
-        Dict[str, Union[_torch.Tensor, np.ndarray]]
-    ]:
+    ) -> _torch.Tensor | np.ndarray | list[_torch.Tensor | np.ndarray] | dict[str, _torch.Tensor | np.ndarray]:
         """Fetch and format data from an AnnData object.
         
         Args:
@@ -137,7 +132,7 @@ class AnnDataFetcher:
             f"Fetch called for key: {key}"
             + (f" with groupby: {groupby}" if groupby else "")
         )
-        
+
         self._adata = adata
         self._key = key
         self._groupby = groupby
@@ -145,7 +140,7 @@ class AnnDataFetcher:
         self._device = device
         self._as_dict = as_dict
 
-        if hasattr(self, "_groupby"):
+        if self._groupby is not None:
             logger.debug(
                 f"Returning grouped data as {'dictionary' if self._as_dict else 'list'}"
             )
@@ -158,18 +153,13 @@ class AnnDataFetcher:
 def fetch(
     adata: anndata.AnnData,
     key: str,
-    groupby: Optional[str] = None,
+    groupby: str | None = None,
     torch: bool = False,
     device: _torch.device = autodevice.AutoDevice(),
     as_dict: bool = True,
     *args,
     **kwargs,
-) -> Union[
-    _torch.Tensor,
-    np.ndarray,
-    List[Union[_torch.Tensor, np.ndarray]],
-    Dict[str, Union[_torch.Tensor, np.ndarray]]
-]:
+) -> _torch.Tensor | np.ndarray | list[_torch.Tensor | np.ndarray] | dict[str, _torch.Tensor | np.ndarray]:
     """Fetch and format data from an AnnData object.
     
     This function provides a convenient interface to retrieve and format data from AnnData

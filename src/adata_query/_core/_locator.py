@@ -1,9 +1,10 @@
 # -- import packages: ---------------------------------------------------------
-import anndata
 import logging
 
 # -- set type hints: ----------------------------------------------------------
-from typing import Any, List, Optional
+from typing import Any
+
+import anndata
 
 # -- configure logger: --------------------------------------------------------
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class AnnDataLocator:
         _searchable (List[str]): List of attribute names to search through.
     """
 
-    def __init__(self, searchable: Optional[List[str]] = None, *args, **kwargs) -> None:
+    def __init__(self, searchable: list[str] | None = None, *args, **kwargs) -> None:
         """Initialize the AnnDataLocator.
         
         Args:
@@ -66,7 +67,7 @@ class AnnDataLocator:
                 self._stash(attr, attr)
         logger.debug(f"Completed data intake. Available attributes: {list(self._ATTRS.keys())}")
 
-    def _cross_reference(self, passed_key: str) -> List[str]:
+    def _cross_reference(self, passed_key: str) -> list[str]:
         """Find all attributes that contain the given key.
         
         Args:
@@ -79,7 +80,7 @@ class AnnDataLocator:
         logger.debug(f"Cross reference for key '{passed_key}' found matches: {matches}")
         return matches
 
-    def _query_str_vals(self, query_result: List[str]) -> str:
+    def _query_str_vals(self, query_result: list[str]) -> str:
         """Format query results as a comma-separated string.
         
         Args:
@@ -90,7 +91,7 @@ class AnnDataLocator:
         """
         return ", ".join(query_result)
 
-    def _format_error_msg(self, key: str, query_result: List[str]) -> str:
+    def _format_error_msg(self, key: str, query_result: list[str]) -> str:
         """Format an error message for key lookup failures.
         
         Args:
@@ -108,7 +109,7 @@ class AnnDataLocator:
         logger.error(msg)
         return msg
 
-    def _format_output_str(self, query_result: List[str]) -> str:
+    def _format_output_str(self, query_result: list[str]) -> str:
         """Extract the attribute name from a query result.
         
         Args:
@@ -162,7 +163,7 @@ class AnnDataLocator:
 def locate(
     adata: anndata.AnnData,
     key: str,
-    searchable: Optional[List[str]] = None,
+    searchable: list[str] | None = None,
 ) -> str:
 
     """Locate a key within an AnnData object's attributes.

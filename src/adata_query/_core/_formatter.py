@@ -1,13 +1,11 @@
 # -- import packages: ---------------------------------------------------------
-import autodevice
-import anndata
 import logging
-import numpy as np
-import torch as _torch
-
 
 # -- set typing: --------------------------------------------------------------
-from typing import Optional, Union
+import anndata
+import autodevice
+import numpy as np
+import torch as _torch
 
 # -- configure logger: --------------------------------------------------------
 logger = logging.getLogger(__name__)
@@ -25,7 +23,7 @@ class DataFormatter:
         _data: The input data to be formatted.
     """
 
-    def __init__(self, data: Union[_torch.Tensor, np.ndarray], *args, **kwargs):
+    def __init__(self, data: _torch.Tensor | np.ndarray, *args, **kwargs):
         """Initialize the DataFormatter.
         
         Args:
@@ -42,7 +40,11 @@ class DataFormatter:
             Device type string ('cpu', 'cuda', or 'mps').
         """
         if hasattr(self._data, "device"):
-            return self._data.device.type
+            device = self._data.device
+            # Handle both torch tensor device (has .type) and numpy device (is str)
+            if hasattr(device, "type"):
+                return device.type
+            return str(device)
         return "cpu"
 
     @property
@@ -116,10 +118,14 @@ class DataFormatter:
         elif self.is_ArrayView:
             logger.debug("Converting ArrayView to numpy array")
             return self._data.toarray()
+        # Handle sparse matrices
+        elif hasattr(self._data, "toarray"):
+            logger.debug("Converting sparse matrix to numpy array")
+            return self._data.toarray()
         logger.debug("Data already in numpy format")
         return self._data
 
-    def to_torch(self, device: Optional[_torch.device] = None) -> _torch.Tensor:
+    def to_torch(self, device: _torch.device | None = None) -> _torch.Tensor:
         """Convert data to torch tensor on specified device.
         
         This method handles conversion from various input types (numpy array, ArrayView)
@@ -158,10 +164,10 @@ class DataFormatter:
 
 # -- functional wrap: ----------------------------------------------------------
 def format_data(
-    data: Union[np.ndarray, _torch.Tensor], 
-    torch: bool = False, 
-    device: Optional[_torch.device] = None,
-) -> Union[np.ndarray, _torch.Tensor]:
+    data: np.ndarray | _torch.Tensor,
+    torch: bool = False,
+    device: _torch.device | None = None,
+) -> np.ndarray | _torch.Tensor:
     """Format data as either numpy array or torch tensor.
     
     This function provides a convenient interface to convert data between numpy arrays
