@@ -1,21 +1,18 @@
-# -- import packages: ----------------------------------------------------------
-import ABCParse
-import autodevice
-import anndata
+# -- import packages: ---------------------------------------------------------
 import logging
+
+# -- set typing: --------------------------------------------------------------
+import anndata
+import autodevice
 import numpy as np
 import torch as _torch
 
-
-# -- set typing: ---------------------------------------------------------------
-from typing import Union, Optional
-
-# -- configure logger: ---------------------------------------------------------
+# -- configure logger: --------------------------------------------------------
 logger = logging.getLogger(__name__)
 
 
-# -- operational class: --------------------------------------------------------
-class DataFormatter(ABCParse.ABCParse):
+# -- operational class: -------------------------------------------------------
+class DataFormatter:
     """Format data to interface with numpy or torch, on a specified device.
     
     This class provides functionality to convert data between numpy arrays and torch tensors,
@@ -26,13 +23,13 @@ class DataFormatter(ABCParse.ABCParse):
         _data: The input data to be formatted.
     """
 
-    def __init__(self, data: Union[_torch.Tensor, np.ndarray], *args, **kwargs):
+    def __init__(self, data: _torch.Tensor | np.ndarray, *args, **kwargs):
         """Initialize the DataFormatter.
         
         Args:
             data: Input data to format (numpy array, torch tensor, or ArrayView).
         """
-        self.__parse__(locals())
+        self._data = data
         logger.debug(f"Initialized DataFormatter with data type: {type(data)}")
 
     @property
@@ -43,7 +40,11 @@ class DataFormatter(ABCParse.ABCParse):
             Device type string ('cpu', 'cuda', or 'mps').
         """
         if hasattr(self._data, "device"):
-            return self._data.device.type
+            device = self._data.device
+            # Handle both torch tensor device (has .type) and numpy device (is str)
+            if hasattr(device, "type"):
+                return device.type
+            return str(device)
         return "cpu"
 
     @property
@@ -117,10 +118,14 @@ class DataFormatter(ABCParse.ABCParse):
         elif self.is_ArrayView:
             logger.debug("Converting ArrayView to numpy array")
             return self._data.toarray()
+        # Handle sparse matrices
+        elif hasattr(self._data, "toarray"):
+            logger.debug("Converting sparse matrix to numpy array")
+            return self._data.toarray()
         logger.debug("Data already in numpy format")
         return self._data
 
-    def to_torch(self, device: Optional[_torch.device] = None) -> _torch.Tensor:
+    def to_torch(self, device: _torch.device | None = None) -> _torch.Tensor:
         """Convert data to torch tensor on specified device.
         
         This method handles conversion from various input types (numpy array, ArrayView)
@@ -140,12 +145,15 @@ class DataFormatter(ABCParse.ABCParse):
             device(type='cuda', index=0)
         """
         if device is None:
-            device = autodevice.AutoDevice()
-        logger.debug(f"Converting data to torch tensor on device: {device}")
-        self.__update__(locals())
+            self._device = autodevice.AutoDevice()
+
+        else:
+            self._device = device
+
+        logger.debug(f"Converting data to torch tensor on device: {self._device}")
 
         if self.is_torch_Tensor:
-            logger.debug(f"Moving existing tensor to device: {device}")
+            logger.debug(f"Moving existing tensor to device: {self._device}")
             return self._data.to(self._device)
         elif self.is_ArrayView:
             logger.debug("Converting ArrayView to numpy before torch conversion")
@@ -156,10 +164,10 @@ class DataFormatter(ABCParse.ABCParse):
 
 # -- functional wrap: ----------------------------------------------------------
 def format_data(
-    data: Union[np.ndarray, _torch.Tensor], 
-    torch: bool = False, 
-    device: Optional[_torch.device] = None,
-) -> Union[np.ndarray, _torch.Tensor]:
+    data: np.ndarray | _torch.Tensor,
+    torch: bool = False,
+    device: _torch.device | None = None,
+) -> np.ndarray | _torch.Tensor:
     """Format data as either numpy array or torch tensor.
     
     This function provides a convenient interface to convert data between numpy arrays

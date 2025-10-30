@@ -1,18 +1,16 @@
-# -- import packages: ----------------------------------------------------------
-import ABCParse
-import anndata
+# -- import packages: ---------------------------------------------------------
 import logging
-import numpy as np
 
-# -- set type hints: -----------------------------------------------------------
-from typing import List, Optional, Dict, Any
+# -- set type hints: ----------------------------------------------------------
+from typing import Any
 
-# -- configure logger: ---------------------------------------------------------
+import anndata
+
+# -- configure logger: --------------------------------------------------------
 logger = logging.getLogger(__name__)
 
-
-# -- operational class: --------------------------------------------------------
-class AnnDataLocator(ABCParse.ABCParse):
+# -- operational class: -------------------------------------------------------
+class AnnDataLocator:
     """Locates and retrieves attributes from AnnData objects.
     
     This class provides functionality to locate specific keys within an AnnData object's
@@ -24,7 +22,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         _searchable (List[str]): List of attribute names to search through.
     """
 
-    def __init__(self, searchable: Optional[List[str]] = None, *args, **kwargs) -> None:
+    def __init__(self, searchable: list[str] | None = None, *args, **kwargs) -> None:
         """Initialize the AnnDataLocator.
         
         Args:
@@ -33,7 +31,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         """
         self._ATTRS = {}
         self._searchable = ['X']
-        if not searchable is None:
+        if searchable is not None:
             self._searchable += searchable
         logger.debug(f"Initialized AnnDataLocator with searchable: {self._searchable}")
 
@@ -69,7 +67,7 @@ class AnnDataLocator(ABCParse.ABCParse):
                 self._stash(attr, attr)
         logger.debug(f"Completed data intake. Available attributes: {list(self._ATTRS.keys())}")
 
-    def _cross_reference(self, passed_key: str) -> List[str]:
+    def _cross_reference(self, passed_key: str) -> list[str]:
         """Find all attributes that contain the given key.
         
         Args:
@@ -82,7 +80,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         logger.debug(f"Cross reference for key '{passed_key}' found matches: {matches}")
         return matches
 
-    def _query_str_vals(self, query_result: List[str]) -> str:
+    def _query_str_vals(self, query_result: list[str]) -> str:
         """Format query results as a comma-separated string.
         
         Args:
@@ -93,7 +91,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         """
         return ", ".join(query_result)
 
-    def _format_error_msg(self, key: str, query_result: List[str]) -> str:
+    def _format_error_msg(self, key: str, query_result: list[str]) -> str:
         """Format an error message for key lookup failures.
         
         Args:
@@ -111,7 +109,7 @@ class AnnDataLocator(ABCParse.ABCParse):
         logger.error(msg)
         return msg
 
-    def _format_output_str(self, query_result: List[str]) -> str:
+    def _format_output_str(self, query_result: list[str]) -> str:
         """Extract the attribute name from a query result.
         
         Args:
@@ -161,8 +159,13 @@ class AnnDataLocator(ABCParse.ABCParse):
         """
         return self._forward(adata, key)
 
+# -- API-facing function: -----------------------------------------------------
+def locate(
+    adata: anndata.AnnData,
+    key: str,
+    searchable: list[str] | None = None,
+) -> str:
 
-def locate(adata: anndata.AnnData, key: str) -> str:
     """Locate a key within an AnnData object's attributes.
     
     This function provides a convenient interface to find which attribute of an AnnData
@@ -172,6 +175,8 @@ def locate(adata: anndata.AnnData, key: str) -> str:
     Args:
         adata: AnnData object to search in.
         key: Key to locate (e.g., "X_pca" for adata.obsm['X_pca']).
+        searchable: Optional list of additional attribute names to search through.
+                    Defaults to None, which only searches 'X'.
         
     Returns:
         The attribute name containing the key (e.g., "obsm" for adata.obsm['X_pca']).
@@ -187,5 +192,5 @@ def locate(adata: anndata.AnnData, key: str) -> str:
         'obsm'
     """
     logger.debug(f"Locate function called for key: {key}")
-    locator = AnnDataLocator()
+    locator = AnnDataLocator(searchable=searchable)
     return locator(adata=adata, key=key)
