@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # -- configure constant(s): ---------------------------------------------------
-PACKAGE_NAME = "cell_neighbors"
+PACKAGE_NAME = "adata_query"
 
 # -- main function: -----------------------------------------------------------
 def main():
