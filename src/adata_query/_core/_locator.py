@@ -56,15 +56,34 @@ class AnnDataLocator:
             adata: AnnData object to process.
         """
         logger.debug("Starting data intake from AnnData object")
-        for attr in adata.__dir__():
-            if "key" in attr:
-                attr_val = getattr(adata, attr)()
-                self._stash(attr, attr_val)
-            if attr == "layers":
-                attr_val = list(getattr(adata, attr))
-                self._stash(attr, attr_val)
-            if attr in self._searchable:
-                self._stash(attr, attr)
+        # Prefer container-native accessors over deprecated AnnData.*_keys methods
+        try:
+            self._stash("obs_keys", adata.obs.columns.tolist())
+        except Exception:
+            pass
+        try:
+            self._stash("var_keys", adata.var.columns.tolist())
+        except Exception:
+            pass
+        try:
+            self._stash("obsm_keys", list(adata.obsm.keys()))
+        except Exception:
+            pass
+        try:
+            self._stash("varm_keys", list(adata.varm.keys()))
+        except Exception:
+            pass
+        try:
+            self._stash("uns_keys", list(adata.uns.keys()))
+        except Exception:
+            pass
+        try:
+            self._stash("layers", list(adata.layers))
+        except Exception:
+            pass
+
+        for attr in self._searchable:
+            self._stash(attr, attr)
         logger.debug(f"Completed data intake. Available attributes: {list(self._ATTRS.keys())}")
 
     def _cross_reference(self, passed_key: str) -> list[str]:
